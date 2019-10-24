@@ -1,0 +1,64 @@
+body{
+
+    background-color: aliceblue;
+}
+
+h1{
+    font: 26px Verdana;
+    border: 1px dashed;
+    border-radius: 15px;
+    padding: 5px;
+    text-align:center;
+
+}
+
+#cards{
+
+    border: 1px dotted;
+    width: 1000px;
+    height: 400px;
+    display: flex;
+    
+
+}
+
+.card{
+    border: 1px solid;
+    width: 200px;
+    height: 400px;
+   
+}
+.locked{
+    background-color: red;
+
+}
+
+#betContainer{
+    width: 200px;
+    display: flex;
+    align-items: center;
+}
+
+#minus{
+    font: 30px verdana;
+    cursor: pointer;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+#bet{
+    font: 30px verdana;
+
+
+}
+
+#plus{
+    font: 30px verdana;
+    cursor: pointer;
+    padding-left: 10px;
+    padding-right: 10px;
+
+}
+
+.card img{
+    width: 100%;
+}
