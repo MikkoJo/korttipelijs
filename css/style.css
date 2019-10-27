@@ -3,7 +3,7 @@ body {
 }
 
 h1 {
-    font: 26px Verdana;
+    font-family: Verdana;
     border: 1px dashed;
     border-radius: 15px;
     padding: 5px;

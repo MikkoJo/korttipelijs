@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="./css/style.css">
     <script src="./js/Deck.js"></script>
     <script src="./js/Player.js"></script>
+    <script src="./js/Game.js"></script>
     <title>Korttipeli</title>
 </head>
 
@@ -104,6 +105,13 @@
             changeCardsElem.disabled = true;
         }
 
+        function updateCardsImage() {
+            let cardElems = Array.from(document.getElementsByClassName('card'));
+            player.hand.forEach((card, index) => {
+                cardElems[index].innerHTML = `<img src="./images/${card+1}.png">`;
+            });
+        }
+
         // Tee StartGame() metodi, joka luo pelaajan ja korttipakan.
         // Pelaajan parametrit ovat nimi tekstikentästä, 5, luotu korttipakka, 100.
         function startGame(e) {
@@ -112,9 +120,9 @@
             if (nameElem.value == '') return false;
             if (typeof player == "undefined") {
                 let playerName = nameElem.value;
-                player = new Player(playerName, 5, deck, 100, betElem.value);
+                player = new Player(playerName, 100, betElem.value);
             } else {
-                player.returnHand();
+                // deck.addCards(player.returnHand());
                 player.bet = betElem.value;
             }
             disableInputs();
@@ -123,8 +131,9 @@
             console.log(`PELAAJAN RAHAT ${player.money} PANOS: ${player.bet}`);
             moneyElem.innerHTML = player.money;
 
-            deck.Deal(5, player);
-
+            player.addCards(deck.deal(5));
+            player.showHand();
+            updateCardsImage();
             // Otetaan lukitut kortit ja muutetaan ne ei lukituiksi
             // Array.from(document.getElementsByClassName("changeMarked"))
             //     .forEach(card => card.classList.remove('changeMarked'));
@@ -137,50 +146,34 @@
         function changeCards() {
 
             let cardsToChangeElem = Array.from(document.getElementsByClassName("changeMarked"));
-                                    // .filter(card => !card.classList.contains('changeMarked'));
             if (cardsToChangeElem.length) {
                 let cardsToChange = cardsToChangeElem.map(card => card.id[4]);
-                player.changeCards(cardsToChange);
+                let deckCards = deck.deal(cardsToChange.length);
+                let playerCards = player.changeCards(cardsToChange, deckCards);
+                deck.returnCards(playerCards);
                 changeCardsElem.innerHTML = 'Laske / Ratkaise'
                 cardsToChangeElem.forEach(cardElem => cardElem.classList.remove('changeMarked'));
+                player.showHand();
+                updateCardsImage();
             }
 
-            // console.log(cardsToChange.length);
-            // for (let i = 0; i < cardsToChange.length; i++) {
-
-            //     let CardID = cardsToChange[i].id.substr(4).toString();
-            //     idString += CardID + ",";
-            //     console.log(`idString for loopissa: ${idString}` );
-            // }
-            player.checkResults();
+            let winnings = Game.checkResults(player.hand, player.bet);
+            console.log(`Winnings: ${winnings}`);
+            console.log(`${player.money} + ${winnings} = ${player.money + winnings}`);
+            player.money += winnings;
+            moneyElem.innerHTML = player.money;
+            deck.returnCards(player.returnHand());
             enableInputs();
         }
 
         function toggleSelectCard(elem) {
             if (!inGameState) return;
             elem.classList.toggle('changeMarked');
-            if (Array.from(document.getElementsByClassName("changeMarked"))
-                .length) {
+            if (Array.from(document.getElementsByClassName("changeMarked")).length) {
                     changeCardsElem.innerHTML = "Vaihda kortit"
                 } else {
                     changeCardsElem.innerHTML = "Laske / Ratkaise"
                 }
-
-            // document.getElementById("card" + id).classList.toggle('changeMarked');
-            // let cardClass = document.getElementById("card" + id).classList;
-            // // Jos kortin class lista ei sisällä arvoa "changeMarked", anna kortille class changeMarked
-            // // Väritä myös div taustaväri punaiseksi
-            // // Jos taas class changeMarked on jo olemassa laita taustaväri esim. siniseksi
-            // // ja ota changeMarked class pois
-
-            // if (cardClass.contains("changeMarked")) {
-            //     cardClass.remove("changeMarked");
-            //     cardClass.add("notLocked");
-            // } else {
-            //     cardClass.remove("notLocked");
-            //     cardClass.add("changeMarked");
-            // }
-
         }
 
     </script>
