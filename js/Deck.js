@@ -1,24 +1,18 @@
-class Deck{
+class Deck {
 
-    constructor(){
+    static get SUITS() { return ['Pata','Ruutu','Risti','Hertta']; }
 
-       // this.deckCards = [0,1,2,13,14,15,16];
-        
-        this.deckCards = [0,1,2,3,4,5,6,7,8,9,10,
-            11,12,13,14,15,16,17,18,19,20,
-            21,22,23,24,25,26,27,28,29,30,
-            31,32,33,34,35,36,37,38,39,40,
-            41,42,43,44,45,46,47,48,49,50,51];
+    constructor() {
 
-
-        this.takenCards = [];
+        this.deckCards = [...Array(52).keys()]; // [0..51]
+        // this.takenCards = [];
         console.log("Pakka luotu");
 
     }
 
-    Deal(amount, player){
+    Deal(amount, player) {
 
-        console.log("Jaetaan " + amount + "korttia pelaajalle " + player.name);
+        console.log(`Jaetaan ${amount} korttia pelaajalle ${player.name}`);
         // Ota deckCards taulukosta satunnaisesti kortteja amount arvon verran.
         // Tarkasta onko jo otettu kortti takenCard taulukossa.
         // Jos on, ota uusi satunnainen kortti. 
@@ -26,35 +20,87 @@ class Deck{
         // Ja lisää vedetty kortti takenCard taulukkoon. 
         // Kerro konsolissa mikä kortti vedettiin
 
-        var i = 0;
-        while(i < amount){
+        for (let i = 0; i < amount; i++) {
 
-            var cardValue = this.deckCards[Math.floor(this.deckCards.length * Math.random())];
-
+            player.hand[i] = this.GetCard();
             
-
-            if(this.takenCards.includes(cardValue))
-            {
-                console.log("Kortti " + cardValue + 
-                "oli jo vedetty. Arvotaan kortti uudestaan");
-
-            }else{
-                console.log("Kortti, jonka sait käteen on: " + cardValue);
-                player.hand[i] = cardValue;
-                this.takenCards.push(cardValue);
-                i++;
-            }
+            // if(this.takenCards.includes(cardValue))
+            // {
+            //     console.log(`Kortti ${cardValue} oli jo vedetty. Arvotaan kortti uudestaan`);
+            // } else {
+            //     console.log(`Kortti, jonka sait käteen on: ${cardValue}`);
+            //     player.hand[i] = cardValue;
+            //     this.takenCards.push(cardValue);
+            //     i++;
+            // }
         }
         // Halutaan näyttää pelaajan käsi hand[]
-        player.ShowHand();
+        player.showHand(true);
     }
 
-    GetCard(){
+    GetCard() {
 
         // GetCard palauttaa satunnaisen luvun Deckin arvoista. 
-        var card = this.deckCards[Math.floor(this.deckCards.length * Math.random())];
-        return card; 
-
+        return this.deckCards.splice(Math.floor(this.deckCards.length * Math.random()),1)[0];
     }
+
+    ReturnCard(card) {
+        this.deckCards.push(card);
+    }
+
+    static GetCardSuit(card){
+        return Deck.SUITS[Math.floor(card/13)];
+        // var suit;
+        // if(card <= 12){
+        //     suit = "Pata";     
+        // }else if(card <= 25){
+        //     suit = "Ruutu";
+        // }else if(card <= 38){
+        //     suit = "Risti";
+        // }else{
+        //     suit = "Hertta";
+        // }
+        // return suit;
+    }
+
+    static GetCardNumber(card) {
+        return (card % 13) + 1;
+        // var number; 
+
+        // if(card <= 12){
+        //     number = card + 1;
+        // }else if(card <= 25){
+        //     number = card - 12;
+        // }else if(card <= 38){
+        //     number = card - 25;
+        // }else{
+        //     number = card - 38;
+        // }
+        // return Number(number);
+    }
+
+
+    static ConvertCardToText(card) {
+
+        // let suit = this.SUITS[Math.floor(card/13)];
+        // let number = (card % 13) + 1;
+        return `${Deck.GetCardSuit(card)} ${Deck.GetCardNumber(card)}`;
+
+        // if (card <= 12) {
+        //     suit = "Pata";
+        //     number = card + 1;
+        // } else if (card <= 25) {
+        //     suit = "Ruutu";
+        //     number = card - 12;
+
+        // } else if (card <= 38) {
+        //     suit = "Risti";
+        //     number = card - 25;
+        // } else {
+        //     suit = "Hertta";
+        //     number = card - 38;
+        // }
+    }
+
 
 }

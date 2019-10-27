@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,133 +8,182 @@
     <link rel="stylesheet" href="./css/style.css">
     <script src="./js/Deck.js"></script>
     <script src="./js/Player.js"></script>
-    <title>Document</title>
+    <title>Korttipeli</title>
 </head>
+
 <body>
     <h1>Tervetuloa pelaamaan korttipeliä</h1>
 
-    <form autocomplete="off">
-        <p>Anna nimesi</p>
-        
-        <input id="nameInput" type="text" name="firstName" placeholder="Nimi"> 
-        <br/>
-        
-        <!-- <button onclick="DealCards()">Jaa kortit</button>-->
-    </form>
-    <div id="betContainer">
-            <h2>Panos: </h2>
-            <span id="minus">-</span>
-            <p id="bet">1</p>
-            <span id="plus">+</span>
-        </div>
-    
-        <script>
-            document.getElementById("minus").addEventListener("click", function(){
-    
-                if(document.getElementById("bet").innerHTML > 1){
-                    document.getElementById("bet").innerHTML -= 1;
-                }
-            });
-            document.getElementById("plus").addEventListener("click", function(){
-    
-            if(document.getElementById("bet").innerHTML < 10){
-                document.getElementById("bet").innerHTML = 
-                Number(document.getElementById("bet").innerHTML) + 1;
-            }
-            });
-        
-        </script>
-    <button onclick="StartGame()">Aloita peli</button><br/>
+    <form autocomplete="off" onsubmit="startGame(event)">
+        <label for="nameInput">Nimi: </label>
+        <input id="nameInput" type="text" name="firstName" placeholder="Anna nimesi">
+        <br>
 
-    <h2>Rahat: </h2><h2 id="money"></h2>
-<!----
-    <p>Erottele pilkulla ne kortit, jotka haluat vaihtaa.</p>
-    <form>
-        <input id="cardInput" type="text" name="cards" placeholder="esim. 1,2,4">
-        <br/>
-        
+        <h2 id="betContainer">Panos: 
+            <input type="button" id="minus" value="-">
+            <input id="bet" readonly value="1">
+            <input type="button" id="plus" value="+">
+        </h2>
+    
+        <button disabled id="startButton">Aloita peli</button><br>
     </form>
--->
-        <button onclick="ChangeCards()">Vaihda kortit</button>
 
-        <!-- Tehdään div:cards ja sen alle jokaiselle kortille oma 
+
+    <h2>Rahat: <span id="money"></span></h2>
+    
+    <button disabled id="changeCards" onclick="changeCards()">Laske / Ratkaise</button>
+
+    <!-- Tehdään div:cards ja sen alle jokaiselle kortille oma 
           div:card0 card1 card2 jne ja class="kortti". -->
-        <div id="cards">
+    <div id="cards">
+        <div onclick="toggleSelectCard(this)" id="card0" class="card"></div>
+        <div onclick="toggleSelectCard(this)" id="card1" class="card"></div>
+        <div onclick="toggleSelectCard(this)" id="card2" class="card"></div>
+        <div onclick="toggleSelectCard(this)" id="card3" class="card"></div>
+        <div onclick="toggleSelectCard(this)" id="card4" class="card"></div>
+    </div>
 
-                <div onclick="SelectCard(0)" id="card0" class="card notLocked"></div>
-                <div onclick="SelectCard(1)" id="card1" class="card notLocked"></div>
-                <div onclick="SelectCard(2)" id="card2" class="card notLocked"></div>
-                <div onclick="SelectCard(3)" id="card3" class="card notLocked"></div>
-                <div onclick="SelectCard(4)" id="card4" class="card notLocked"></div>
-            </div>
     <script>
+        // Tee h3 id:bet, jossa panoksen määrä. Toisella puolella + ja toisella - painike. 
+        // Painikkeet kasvattaa tai vähentää panoksen määrää.
 
-    // Tee h3 id:bet, jossa panoksen määrä. Toisella puolella + ja toisella - painike. 
-    // Painikkeet kasvattaa tai vähentää panoksen määrää.
+        let betElem = document.getElementById("bet");
+        let nameElem = document.getElementById("nameInput");
+        let moneyElem = document.getElementById("money");
+        let startButtonElem = document.getElementById("startButton");
+        let changeCardsElem = document.getElementById('changeCards');
+        let betContainerElem = document.getElementById('betContainer');
+        let minusElem = document.getElementById("minus");
+        let plusElem = document.getElementById("plus");
 
+        let inGameState = false;
+        let deck = new Deck();
+        let player;
 
-    // Tee StartGame() metodi, joka luo pelaajan ja korttipakan.
-    // Pelaajan parametrit ovat nimi tekstikentästä, 5, luotu korttipakka, 100.
-    function StartGame(){
-    
-        if(typeof deck == "undefined" && typeof player == "undefined"){
-            deck = new Deck();
-            player = new Player(document.getElementById("nameInput").value, 5, deck, 100, 
-            document.getElementById("bet").innerHTML);
-        }
-        deck.takenCards = [];
-        player.bet = document.getElementById("bet").innerHTML;
-        console.log("PELAAJAN RAHAT " + player.money + "PANOS: " + player.bet);
-        player.money -= player.bet;
-        console.log("PELAAJAN RAHAT " + player.money + "PANOS: " + player.bet);
+        minusElem.addEventListener("click", function () {
+            if (inGameState) return;
+            let bet = Number(betElem.value);
+            if (bet <= 1) 
+                return;
+            betElem.value--;
+        });
 
-        deck.Deal(5, player);
-        document.getElementById("money").innerHTML = player.money;
-       
-        // Otetaan lukitut kortit ja muutetaan ne ei lukituiksi
-        var lockedCards = document.getElementsByClassName("locked");
-        lockedCards = Array.from(lockedCards);
+        plusElem.addEventListener("click", function () {
+            if (inGameState) return;
+            let bet = Number(betElem.value);
+            if (bet >= 10) 
+                return;
+            betElem.value++;
+        });
 
-        for (var i=0; i<lockedCards.length; i++){            
-            lockedCards[i].classList.remove("locked");
-            lockedCards[i].classList.add("notLocked");
-        }
-    }
+        nameElem.addEventListener('input', function() {
+            if (nameElem.value == 0) {
+                startButtonElem.disabled = true;
+            } else {
+                startButtonElem.disabled = false;
+            }
+        });
 
-    function ChangeCards(){
-        //player.ChangeCards(document.getElementById("cardInput").value);
-
-        var idString ="";
-        var cardsToChange = document.getElementsByClassName("notLocked");
-        console.log(cardsToChange.length);
-        for (var i= 0; i<cardsToChange.length; i++){
-            
-            var CardID = cardsToChange[i].id.substr(4).toString();
-            idString +=CardID+",";
-            console.log("idString for loopissa: " + idString);
-        }
-        player.ChangeCards(idString);
-    }
-
-    function SelectCard(id){
-
-        // Jos kortin class lista ei sisällä arvoa "locked", anna kortille class locked
-        // Väritä myös div taustaväri punaiseksi
-        // Jos taas class locked on jo olemassa laita taustaväri esim. siniseksi
-        // ja ota locked class pois
-
-        if(document.getElementById("card"+id).classList.contains("locked")){
-
-            document.getElementById("card"+id).classList.remove("locked");
-            document.getElementById("card"+id).classList.add("notLocked");
-           // document.getElementById("card"+id).style.backgroundColor = "red";
-        }else{
-            document.getElementById("card"+id).classList.remove("notLocked");
-            document.getElementById("card"+id).classList.add("locked");
+        function disableInputs() {
+            inGameState = true;
+            nameElem.disabled = true;
+            betElem.disabled = true;
+            minusElem.disabled = true;
+            plusElem.disabled = true;
+            startButtonElem.disabled = true;
+            changeCardsElem.disabled = false;
         }
 
-    }
+        function enableInputs() {
+            inGameState = false;
+            nameElem.disabled = false;
+            betElem.disabled = false;
+            minusElem.disabled = false;
+            plusElem.disabled = false;
+            startButtonElem.disabled = false;
+            changeCardsElem.disabled = true;
+        }
+
+        // Tee StartGame() metodi, joka luo pelaajan ja korttipakan.
+        // Pelaajan parametrit ovat nimi tekstikentästä, 5, luotu korttipakka, 100.
+        function startGame(e) {
+
+            e.preventDefault();
+            if (nameElem.value == '') return false;
+            if (typeof player == "undefined") {
+                let playerName = nameElem.value;
+                player = new Player(playerName, 5, deck, 100, betElem.value);
+            } else {
+                player.returnHand();
+                player.bet = betElem.value;
+            }
+            disableInputs();
+
+            player.money -= player.bet;
+            console.log(`PELAAJAN RAHAT ${player.money} PANOS: ${player.bet}`);
+            moneyElem.innerHTML = player.money;
+
+            deck.Deal(5, player);
+
+            // Otetaan lukitut kortit ja muutetaan ne ei lukituiksi
+            // Array.from(document.getElementsByClassName("changeMarked"))
+            //     .forEach(card => card.classList.remove('changeMarked'));
+            // for (let i = 0; i < lockedCards.length; i++) {
+            //     lockedCards[i].classList.remove("changeMarked");
+            //     // lockedCards[i].classList.add("notLocked");
+            // }
+        }
+
+        function changeCards() {
+
+            let cardsToChangeElem = Array.from(document.getElementsByClassName("changeMarked"));
+                                    // .filter(card => !card.classList.contains('changeMarked'));
+            if (cardsToChangeElem.length) {
+                let cardsToChange = cardsToChangeElem.map(card => card.id[4]);
+                player.changeCards(cardsToChange);
+                changeCardsElem.innerHTML = 'Laske / Ratkaise'
+                cardsToChangeElem.forEach(cardElem => cardElem.classList.remove('changeMarked'));
+            }
+
+            // console.log(cardsToChange.length);
+            // for (let i = 0; i < cardsToChange.length; i++) {
+
+            //     let CardID = cardsToChange[i].id.substr(4).toString();
+            //     idString += CardID + ",";
+            //     console.log(`idString for loopissa: ${idString}` );
+            // }
+            player.checkResults();
+            enableInputs();
+        }
+
+        function toggleSelectCard(elem) {
+            if (!inGameState) return;
+            elem.classList.toggle('changeMarked');
+            if (Array.from(document.getElementsByClassName("changeMarked"))
+                .length) {
+                    changeCardsElem.innerHTML = "Vaihda kortit"
+                } else {
+                    changeCardsElem.innerHTML = "Laske / Ratkaise"
+                }
+
+            // document.getElementById("card" + id).classList.toggle('changeMarked');
+            // let cardClass = document.getElementById("card" + id).classList;
+            // // Jos kortin class lista ei sisällä arvoa "changeMarked", anna kortille class changeMarked
+            // // Väritä myös div taustaväri punaiseksi
+            // // Jos taas class changeMarked on jo olemassa laita taustaväri esim. siniseksi
+            // // ja ota changeMarked class pois
+
+            // if (cardClass.contains("changeMarked")) {
+            //     cardClass.remove("changeMarked");
+            //     cardClass.add("notLocked");
+            // } else {
+            //     cardClass.remove("notLocked");
+            //     cardClass.add("changeMarked");
+            // }
+
+        }
 
     </script>
 </body>
+
 </html>

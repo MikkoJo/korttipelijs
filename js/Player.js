@@ -1,6 +1,6 @@
 class Player{
 
-    constructor(name, numOfCards, gameDeck, money, bet){
+    constructor(name, numOfCards, gameDeck, money, bet) {
 
         this.name = name;
         this.numOfCards = numOfCards;
@@ -8,68 +8,60 @@ class Player{
         this.hand = [];
         this.money = money;
         this.bet = bet;
-        console.log("Pelaaja on luotu: "+ name);
+        console.log(`Pelaaja on luotu: ${name}`);
     }
 
-    ShowHand(){
-        for(var i = 0; i<this.hand.length; i++){
+    showHand(update=false){
+        // for(var i = 0; i<this.hand.length; i++) {
+        [...player.hand.keys()].forEach(i => {
 
-            console.log("Kortti kädessä " + i + "on: " + this.hand[i] + 
-            "Tekstinä: " + this.ConvertCardToText(this.hand[i]));
-            document.getElementById("card"+i).innerHTML = "<img src=\"./images/"+(this.hand[i]+1)+".png\">";
-        }
+            console.log(`Kortti kädessä ${i} on: ${this.hand[i]}` + 
+            ` - Tekstinä: ${Deck.ConvertCardToText(this.hand[i])}`);
+            if (update)
+                document.getElementById("card"+i).innerHTML = `<img src="./images/${(this.hand[i]+1)}.png">`;
+        })
+        // }
     }
 
-    ConvertCardToText(card){
-
-        var suit;
-        var number; 
-
-        if(card <= 12){
-            suit = "Pata";
-            number = card + 1;
-        }else if(card <= 25){
-            suit = "Ruutu";
-            number = card - 12;
-
-        }else if(card <= 38){
-            suit = "Risti";
-            number = card - 25;
-
-        }else{
-            suit = "Hertta";
-            number = card - 38;
-
-        }
-        return suit + " " + number;
+    returnHand() {
+        this.hand.forEach(card => this.gameDeck.ReturnCard(card));
+        this.hand=[];
     }
 
-    ChangeCards(cards){
+    changeCards(indexes) {
 
         // cards arvo on esim. 1,2,4
-        console.log("Vaihdettavat kortit ovat: " + cards);
-        var nums =  cards.split(',');
-        console.log("Taulukon pituus: " + nums.length);
+        console.log("Vaihdettavat kortit ovat: " + indexes.join(','));
+        // var nums =  cards.split(',');
+        // console.log("Taulukon pituus: " + nums.length);
 
-        var i = 0;
-        while(i<nums.length){
+        let newCards = [];
+        indexes.forEach(() => newCards.push(deck.GetCard()));
+        indexes.forEach(index => {
+            this.gameDeck.ReturnCard(this.hand[index]);
+            this.hand[index] = newCards.pop();
+            console.log(`Vedettiin kortti ${this.hand[index]} - ${Deck.ConvertCardToText(this.hand[index])}`);
+        });
+        
+        // let i = 0;
+        // while(i<nums.length){
 
 
-            var cardValue = deck.GetCard();
-            console.log("Vedettiin kortti: " + cardValue+ " " + 
-            this.ConvertCardToText(cardValue));
+        //     var cardValue = deck.GetCard();
+        //     console.log("Vedettiin kortti: " + cardValue+ " " + 
+        //     Deck.ConvertCardToText(cardValue));
 
-            if(deck.takenCards.includes(cardValue) == false){
+        //     if(deck.takenCards.includes(cardValue) == false){
 
-                console.log("Kortti käteen");
-                this.hand[nums[i]] = cardValue;
-                deck.takenCards.push(cardValue);
-                i++;
-            }else{
+        //         console.log("Kortti käteen");
+        //         this.hand[nums[i]] = cardValue;
+        //         deck.takenCards.push(cardValue);
+        //         i++;
+        //     }else{
 
-                console.log("Kortti oli jo vedetty");
+        //         console.log("Kortti oli jo vedetty");
 
-            }
+        //     }
             // Hetaan yksittäinen satunnainen korttinumero GetCard() metodista
             // Kirjoitetaan logiin mikä kortti juuri vedettiin. Myös tekstinä
             // Tarkastetaan onko kortti jo vedettyjen korttien taulukossa
@@ -78,32 +70,33 @@ class Player{
             // kasvatetaan i++
 
 
-        } // while loppuu
-        this.ShowHand();
-        this.CheckResults();
-        // näytetään pelaajan käsi  this.ShowHand();
+        // } // while loppuu
+        this.showHand(true);
+        // this.checkResults();
+        // näytetään pelaajan käsi  this.showHand();
         // tarkastetaan tulokset (Tehdään yhdessä)
     } 
 
-    CheckResults(){
+    checkResults(){
 
-        var winnings = 0;
-        var resultDone = false; 
+        let winnings = 0;
+        let resultDone = false; 
         console.log("Tarkastetaan tulokset panoksella: " + this.bet);
         // Laitetaan kortit numerojärjestykseen kädessä
-        this.hand.sort(function(a,b){return a-b});
+        this.hand.sort((a,b) => {return a-b});
         // Käydään läpi hand taulukko
-        for(var i = 0; i<this.hand.length; i++){
+        this.showHand();
+        // for(let i = 0; i<this.hand.length; i++){
 
-            console.log("Kortti kädessä" + i + "on: " + this.hand[i] + "Tekstinä: " + 
-            this.ConvertCardToText(this.hand[i]));
-        }
+        //     console.log("Kortti kädessä" + i + "on: " + this.hand[i] + "Tekstinä: " + 
+        //     Deck.ConvertCardToText(this.hand[i]));
+        // }
 
         // Tarkastetaan onko kädessä väri
-        if(resultDone == false && this.GetSuit(this.hand[0]) == this.GetSuit(this.hand[1]) && 
-        this.GetSuit(this.hand[1]) == this.GetSuit(this.hand[2]) && 
-        this.GetSuit(this.hand[2]) == this.GetSuit(this.hand[3]) &&
-        this.GetSuit(this.hand[3]) == this.GetSuit(this.hand[4]))
+        if(resultDone == false && Deck.GetCardSuit(this.hand[0]) == Deck.GetCardSuit(this.hand[1]) && 
+        Deck.GetCardSuit(this.hand[1]) == Deck.GetCardSuit(this.hand[2]) && 
+        Deck.GetCardSuit(this.hand[2]) == Deck.GetCardSuit(this.hand[3]) &&
+        Deck.GetCardSuit(this.hand[3]) == Deck.GetCardSuit(this.hand[4]))
         {
             console.log("SINULLA ON VÄRI");
             winnings = this.bet * 6;
@@ -113,13 +106,10 @@ class Player{
         // Tarkastetaan onko kädessä suora
         var straightHand = [];
 
-        for(var i = 0; i<this.hand.length; i++){
-
-            straightHand.push(this.GetNumber(this.hand[i]));
-        }
-        straightHand.sort(function(a,b){return a-b});
-
-        if(resultDone == false && straightHand[0] - straightHand[1] == -1 &&
+        this.hand.forEach(card => straightHand.push(Deck.GetCardNumber(card)));
+        straightHand.sort((a,b) => {return a-b});
+        
+        if (resultDone == false && straightHand[0] - straightHand[1] == -1 &&
         straightHand[1] - straightHand[2] == -1 &&
         straightHand[2] - straightHand[3] == -1 &&
         straightHand[3] - straightHand[4] == -1)
@@ -135,10 +125,10 @@ class Player{
 
         for(var i = 0; i<this.hand.length; i++){
 
-            pairHand.push(this.GetNumber(this.hand[i]));
+            pairHand.push(Deck.GetCardNumber(this.hand[i]));
         }
         console.log(pairHand);
-        var duplicates = this.FindDuplicateInHand(pairHand);
+        var duplicates = this.findDuplicateInHand(pairHand);
         // duplicate = [4,8]
         console.log(duplicates);
         var count = 0; // paljonko on ensimmäistä lukua 
@@ -199,7 +189,7 @@ class Player{
         
     }
 
-    FindDuplicateInHand(arra1) {
+    findDuplicateInHand(arra1) {
         var object = {};
         var result = [];
 
@@ -219,33 +209,5 @@ class Player{
         return result;
     }
 
-    GetSuit(card){
 
-        var suit;
-        if(card <= 12){
-            suit = "Pata";     
-        }else if(card <= 25){
-            suit = "Ruutu";
-        }else if(card <= 38){
-            suit = "Risti";
-        }else{
-            suit = "Hertta";
-        }
-        return suit;
-    }
-
-    GetNumber(card){
-        var number; 
-
-        if(card <= 12){
-            number = card + 1;
-        }else if(card <= 25){
-            number = card - 12;
-        }else if(card <= 38){
-            number = card - 25;
-        }else{
-            number = card - 38;
-        }
-        return Number(number);
-    }
 }
