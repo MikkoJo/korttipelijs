@@ -3,8 +3,7 @@ class Deck {
 
     constructor() {
         this.deckCards = [...Array(52).keys()]; // [0..51]
-        console.log("Pakka luotu");
-
+        writeLog("Pakka luotu");
     }
 
     deal(amount) {
@@ -15,7 +14,7 @@ class Deck {
         for (let i = 0; i < amount; i++) {
             hand.push(this.getCard());
         }
-        console.log(`Jaetaan ${amount} korttia pelaajalle: ${hand}`);
+        writeLog(`Jaetaan ${amount} korttia pelaajalle: ${hand}`);
         return hand;
     }
 
@@ -25,7 +24,7 @@ class Deck {
     }
 
     returnCard(card) {
-        // Palauttaa kortti taulukkoon.
+        // Palauttaa yksi kortti taulukkoon.
         this.deckCards.push(card);
     }
 
