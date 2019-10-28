@@ -8,7 +8,7 @@ class Player {
     }
 
     showHand(){
-        [...player.hand].forEach((card,index) => {
+        player.hand.forEach((card,index) => {
             writeLog(`Kortti kädessä ${index} on: ${card} - ${Deck.convertCardToText(card)}`);
         })
     }
